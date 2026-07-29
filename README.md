@@ -14,15 +14,25 @@ El backend no solo procesa los datos de forma segura, sino que además renderiza
 * **UI Dinámica e Inteligente:** Renderizado del lado del servidor (SSR) con un diseño personalizado. Cuenta con lógica avanzada en el pintado de etiquetas que detecta y resalta automáticamente la plataforma seleccionada (por ejemplo, diferenciando entre generaciones como PS4/PS5 o Xbox One/Series) sin alterar la paleta cromática original de cada marca.
 * **Seguridad Básica:** Remoción de cabeceras vulnerables mediante la desactivación de `x-powered-by`.
 
+## 🚀 Estado del Proyecto (v1.1.0)
+El proyecto cuenta con integración a base de datos relacional, consumo de API externa y validaciones dinámicas en el cliente para evitar duplicados.
+
+### ✨ Características Implementadas:
+* **📋 Vista de Tarjetas (`/misjuegos`):** Renderizado dinámico de juegos guardados con portadas en alta resolución, badges visuales por plataforma (PC 🎯, PlayStation 5, Xbox Series S/X, Switch) y etiquetas de estado (*Jugando*, *Pendiente*, *Terminado*).
+* **🔍 Búsqueda e Integración API:** Conexión optimizada a la API de RAWG para obtener nombres, portadas e información de plataformas automáticamente.
+* **🛡️ Validación Anti-Duplicados en Tiempo Real:** Micro-endpoint `/api/check-game` que verifica en la base de datos si el juego ya existe antes de enviar el formulario, mostrando una alerta visual sin recargar ni perder los campos ingresados.
+* **🎉 Confirmación de Guardado:** Vista de éxito detallada que despliega la portada cargada y los datos recién almacenados.
+* **🗄️ Persistencia de Datos:** Configuración robusta con Prisma ORM y MariaDB/MySQL con manejo de conexiones y tipos seguros en TypeScript.
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
 * **Lenguaje:** TypeScript / JavaScript (ES6+)
-* **Framework de Servidor:** Express.js
+* **Backend:** Node.js, Express.js
+ **Consumo de API:** API pública de RAWG (Video Games Database)
 * **Cliente HTTP:** Axios
-* **Entorno de Ejecución:** Node.js
-* **Estilos:** HTML5 / CSS Inline con soporte dinámico de variables de marca
+* **Base de Datos & ORM:** MariaDB / MySQL + Prisma ORM
+* **Frontend:** HTML5, CSS Inline/scoped, JavaScript Asíncrono (`fetch` API)
 
 ---
 
@@ -43,6 +53,16 @@ A partir de este punto, toda la gestión de entornos, módulos y comandos de arr
   ```bash
   npm install
   ```
+* **Configuracion de variables de entorno:** Crear un archivo .env en la raiz del proyecto con la estructura
+  ```(.env)
+  DATABASE_URL="mysql://USUARIO:PASSWORD@localhost:3306/NOMBRE_BD"
+  RAWG_API_KEY="TU_RAWG_API_KEY_AQUI"
+  PORT=3000
+  ```
+* **Sincronizar la Base de Datos:** Esto para que la app se sincronice con la Base de Datos creada y guarde correctamente los juegos a añadir
+```bash
+  npx prisma db push
+  ```
 
 * **Comando de Arranque en Desarrollo:** Para levantar el servidor con recarga en tiempo real, el entorno mapea el script configurado en el archivo. Solo debes ejecutar:
   ```bash
@@ -53,16 +73,10 @@ A partir de este punto, toda la gestión de entornos, módulos y comandos de arr
 ---
 
 ### 3. Configurar la API Key de RAWG
-Consigue una clave gratuita en [RAWG API](https://rawg.io/apidocs). Luego, abre el archivo `src/index.ts` y reemplaza el valor de la constante con tu propia clave:
+Consigue una clave gratuita en [RAWG API](https://rawg.io/apidocs). Luego, abre el archivo `.env` y reemplaza el valor con tu propia clave:
 
-```typescript
-const RAWG_API_KEY: string = 'TU_RAWG_API_KEY_AQUI';
-```
-
-### 4. Inicializar el almacenamiento local
-Crea un archivo vacío llamado `juegos.json` dentro de la carpeta `src/` con un arreglo inicial vacío:
-```json
-[]
+```(.env)
+ RAWG_API_KEY="TU_RAWG_API_KEY_AQUI"
 ```
 
 ---
@@ -71,17 +85,16 @@ Crea un archivo vacío llamado `juegos.json` dentro de la carpeta `src/` con un 
 
 | Método | Ruta | Descripción |
 | :--- | :--- | :--- |
-| **`GET`** | `/new-game` | Muestra el formulario visual para buscar un juego en RAWG, seleccionar la plataforma de destino y definir su estatus ("Pendiente", "Jugando", "Terminado"). |
-| **`GET`** | `/add` | Endpoint de procesamiento que recibe los datos del formulario, consulta la API externa y persiste la información en el archivo local. |
-| **`GET`** | `/my-games` | Renderiza la lista completa de tu backlog en un panel oscuro estilizado, mostrando las carátulas oficiales y encendiendo con un borde de neón la plataforma que elegiste. |
+| **`GET`** | `/agregarjuego` | Muestra el formulario visual para buscar un juego en RAWG, seleccionar la plataforma de destino y definir su estatus ("Pendiente", "Jugando", "Terminado"). |
+| **`GET`** | `/agregar` | Endpoint de procesamiento que recibe los datos del formulario, consulta la API externa y persiste la información en la base de datos. |
+| **`GET`** | `/misjuegos` | Renderiza la lista completa de tu backlog en un panel oscuro estilizado, mostrando las carátulas oficiales y encendiendo con un borde de neón la plataforma que elegiste. |
 
 ---
 
-## 📈 Próximas Mejoras (Evolución Fullstack)
+## 📈 Próximas Mejoras
 
 Este proyecto se encuentra en constante evolución. Los siguientes pasos planificados en la hoja de ruta son:
 
-1. **Migración a Variables de Entorno (.env):** Ocultar credenciales sensibles usando `dotenv`.
-2. **Base de Datos Relacional:** Sustituir el archivo `juegos.json` por una base de datos real (SQLite/PostgreSQL) utilizando **Prisma ORM**.
-3. **Autenticación de Usuarios:** Implementar un sistema de registro e inicio de sesión seguro con contraseñas encriptadas (`bcrypt`) y tokens de sesión (**JWT**).
-4. **Desacoplamiento (API REST + Frontend Dedicado):** Transformar el backend en una API pura que responda únicamente datos JSON y construir un cliente independiente utilizando **React** y **Vite**.
+1. **Página de Inicio (`/`):** Transformar la vista inicial básica en un dashboard funcional (resumen de juegos en curso, estadísticas rápidas o accesos directos).
+2. **Autenticación de Usuarios:** Implementar un sistema de registro e inicio de sesión seguro con contraseñas encriptadas (`bcrypt`) y tokens de sesión (**JWT**).
+3. **Desacoplamiento (API REST + Frontend Dedicado):** Transformar el backend en una API pura que responda únicamente datos JSON y construir un cliente independiente utilizando **React** y **Vite**.
